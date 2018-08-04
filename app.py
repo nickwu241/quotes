@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import json
-import random
 import os
+import random
 
-from flask import abort, Flask, jsonify
+from flask import Flask, abort, jsonify
+
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
