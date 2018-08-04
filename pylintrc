@@ -1,0 +1,5 @@
+[MESSAGES CONTROL]
+disable=missing-docstring
+
+[FORMAT]
+good-names=i,j,k,e,f
