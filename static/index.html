@@ -20,32 +20,48 @@
       max-width: 720px;
       margin: 0 auto;
     }
+
+    .loader {
+      border: 16px solid #f3f3f3;
+      border-top: 16px solid #5cb85c;
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      animation: spin 1.5s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
 <body>
   <div id="app">
-    <h1>Goody Quotes</h1>
-
-    <div class="card">
-      <div class="card-header">
-        <button type="button" class="btn btn-success btn-sm" @click="newRandomQuote">New Quote (GET /quotes/random)</button>
+    <h1>Quotes</h1>
+    <div v-if="loading" align="center"><div class="loader"></div></div>
+    <div v-else>
+      <div class="card">
+        <div class="card-header">
+          <button type="button" class="btn btn-success btn-sm" @click="newRandomQuote">New Quote</button>
+        </div>
+        <div class="card-body">
+          <blockquote class="blockquote mb-0">
+            <p>{{ randomQuote['quote'] }}</p>
+            <footer class="blockquote-footer"><cite>{{ randomQuote['author'] }}</cite></footer>
+            <span class="badge badge-success">{{ randomQuote['tag'] }}</span>
+          </blockquote>
+        </div>
       </div>
-      <div class="card-body">
-        <blockquote class="blockquote mb-0">
-          <p>{{ randomQuote['quote'] }}</p>
-          <footer class="blockquote-footer"><cite>{{ randomQuote['author'] }}</cite></footer>
-          <span class="badge badge-success">{{ randomQuote['tag'] }}</span>
-        </blockquote>
-      </div>
-    </div>
 
-    <div class="card">
-      <div class="card-body">
-        <h3 class="card-title">Try out the API!</h3>
-        <p class="card-text">
-          <div v-for="endpoint in endpoints">GET {{ endpoint }}</div>
-        </p>
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">Try out the API!</h3>
+          <p class="card-text">
+            <div v-for="endpoint in endpoints">GET {{ endpoint }}</div>
+          </p>
+        </div>
       </div>
     </div>
 
@@ -54,26 +70,27 @@
     var app = new Vue({
       el: '#app',
       data: {
+        loading: true,
         endpoints: [],
         randomQuote: {quote: '', author: '', tag: ''}
       },
       methods: {
         fetchEndpoints: function() {
-          fetch('/endpoints')
+          return fetch('/endpoints')
             .then(resp => resp.json())
             .then(data => this.endpoints = data)
             .catch(err => console.err(err))
         },
         newRandomQuote: function() {
-          fetch('/quotes/random')
+          return fetch('/quotes/random')
             .then(resp => resp.json())
             .then(data => this.randomQuote = data)
             .catch(err => console.err(err))
         }
       },
       mounted: function() {
-        this.fetchEndpoints()
-        this.newRandomQuote()
+        Promise.all([this.fetchEndpoints(), this.newRandomQuote()])
+          .then(() => setTimeout(() => this.loading = false, 2000))
       }
     })
   </script>
