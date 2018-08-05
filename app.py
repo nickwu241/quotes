@@ -38,9 +38,9 @@ def quotes_page(page):
 
 @app.route('/quotes/<int:quote_id>')
 def quotes_id(quote_id):
-    if quote_id >= len(QUOTES):
+    if quote_id > len(QUOTES):
         abort(404)
-    return jsonify(QUOTES[quote_id])
+    return jsonify(QUOTES[quote_id-1])
 
 @app.route('/quotes/paths')
 def quotes_paths():
