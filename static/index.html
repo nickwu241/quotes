@@ -23,7 +23,7 @@
 
     .loader {
       border: 16px solid #f3f3f3;
-      border-top: 16px solid #5cb85c;
+      border-top: 16px solid #428bca;
       border-radius: 50%;
       width: 120px;
       height: 120px;
@@ -41,16 +41,18 @@
   <div id="app">
     <h1>Quotes</h1>
     <div v-if="loading" align="center"><div class="loader"></div></div>
+    <div v-else-if="error"><p>{{ error }}</p></div>
     <div v-else>
       <div class="card">
         <div class="card-header">
-          <button type="button" class="btn btn-success btn-sm" @click="newRandomQuote">New Quote</button>
+          <button type="button" class="btn btn-primary btn-sm" @click="newRandomQuote">New Quote</button>
+          <span class="badge badge-pill badge-info float-right">{{ numberOfQuotes }} quotes available</span>
         </div>
         <div class="card-body">
           <blockquote class="blockquote mb-0">
             <p>{{ randomQuote['quote'] }}</p>
             <footer class="blockquote-footer"><cite>{{ randomQuote['author'] }}</cite></footer>
-            <span class="badge badge-success">{{ randomQuote['tag'] }}</span>
+            <span class="badge badge-primary">{{ randomQuote['tag'] }}</span>
           </blockquote>
         </div>
       </div>
@@ -71,26 +73,33 @@
       el: '#app',
       data: {
         loading: true,
+        error: '',
+        numberOfQuotes: 0,
         endpoints: [],
         randomQuote: {quote: '', author: '', tag: ''}
       },
       methods: {
-        fetchEndpoints: function() {
-          return fetch('/endpoints')
+        fetchMetadata: function() {
+          return fetch('/metadata')
             .then(resp => resp.json())
-            .then(data => this.endpoints = data)
-            .catch(err => console.err(err))
+            .then(data => {
+              this.numberOfQuotes = data['number_of_quotes']
+              this.endpoints = data['endpoints']
+            })
         },
         newRandomQuote: function() {
           return fetch('/quotes/random')
             .then(resp => resp.json())
             .then(data => this.randomQuote = data)
-            .catch(err => console.err(err))
         }
       },
       mounted: function() {
-        Promise.all([this.fetchEndpoints(), this.newRandomQuote()])
-          .then(() => setTimeout(() => this.loading = false, 2000))
+        Promise.all([this.fetchMetadata(), this.newRandomQuote()])
+          .then(() => this.loading = false)
+          .catch((err) => {
+            this.loading = false
+            this.error = `Error fetching quotes: ${err}`
+          })
       }
     })
   </script>

@@ -19,15 +19,9 @@ LAST_PAGE = math.ceil(len(QUOTES) / ENTRIES_PER_PAGE)
 def index():
     return send_from_directory('static', 'index.html')
 
-@app.route('/endpoints')
-def endpoints():
-    return jsonify([str(r) for r in app.url_map.iter_rules()
-                    if str(r).startswith('/quotes')])
-
-@app.route('/quotes/discover_paths')
-def quotes_discover_paths():
-    quote_paths = [f for f in os.listdir('quotes') if f.endswith('.json')]
-    return jsonify(quote_paths)
+@app.route('/metadata')
+def metadata():
+    return jsonify(METADATA)
 
 @app.route('/quotes/random')
 def quotes_random():
@@ -48,9 +42,21 @@ def quotes_id(quote_id):
         abort(404)
     return jsonify(QUOTES[quote_id])
 
-@app.route('/quotes/<path:json_path>')
+@app.route('/quotes/paths')
+def quotes_paths():
+    return jsonify(METADATA['paths'])
+
+@app.route('/quotes/paths/<path:json_path>')
 def quotes_path(json_path):
     return send_from_directory('quotes', json_path)
+
+METADATA = {
+    'number_of_quotes': len(QUOTES),
+    'pages': LAST_PAGE,
+    'paths': [f for f in os.listdir('quotes') if f.endswith('.json')],
+    'endpoints' : [str(r) for r in app.url_map.iter_rules()
+                   if str(r).startswith('/quotes')],
+}
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
