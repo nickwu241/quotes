@@ -20,7 +20,7 @@ def get_quotes_list_from_html(content):
             continue
         quote, author = div.text.strip().split('”')
         quote = quote.strip(' “”')
-        author = author.strip(' -')
+        author = author.split('\n', 2)[0].strip(' –—―-') or 'Unknown'
         quotes_list.append({'quote': quote, 'author': author})
     return quotes_list
 
@@ -28,7 +28,7 @@ def get_quotes_list_from_html(content):
 def __extract_quotes_to_disk(link, name, overwrite=False):
     print(f'__extract_quotes_to_disk({link}, {name}, overwrite={overwrite})')
 
-    filename = os.path.join('quotes', name) + '.json'
+    filename = os.path.join('quotes', f'{name}.json')
     if not overwrite and os.path.isfile(filename):
         print(f'Skipped {link}: {filename} already exists')
         return
@@ -59,7 +59,7 @@ def main():
     failed_links_to_errors = {}
     for name, link in article_names_to_links.items():
         try:
-            __extract_quotes_to_disk(link, name)
+            __extract_quotes_to_disk(link, name, overwrite=True)
         except ExtractionError as e:
             failed_links_to_errors[link] = e
 
