@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 import json
 import os
+from multiprocessing import Pool
 from time import sleep
 
 import requests
 from bs4 import BeautifulSoup
-
-
-class ExtractionError(Exception):
-    pass
 
 
 def get_quotes_list_from_html(content):
@@ -16,10 +13,21 @@ def get_quotes_list_from_html(content):
     quotes_list = []
     quote_divs = soup.find_all('div', class_='author-quotes')
     for div in quote_divs:
-        if not div.text.strip():
+        div_text = div.text.strip()
+        if not div_text:
             continue
-        quote, author = div.text.strip().split('”')
-        quote = quote.strip(' “”')
+
+        author = 'Unknown'
+        parts = div_text.split('”')
+        if len(parts) == 1:
+            quote = parts[0]
+        elif len(parts) == 2:
+            quote, author = parts
+        else:
+            i = div_text.rfind('”')
+            quote, author = div_text[:i], div_text[i:]
+
+        quote = quote.lstrip(' 1234567890.').strip(' “”')
         author = author.split('\n', 2)[0].strip(' –—―-') or 'Unknown'
         quotes_list.append({'quote': quote, 'author': author})
     return quotes_list
@@ -30,8 +38,7 @@ def __extract_quotes_to_disk(link, name, overwrite=False):
 
     filename = os.path.join('quotes', f'{name}.json')
     if not overwrite and os.path.isfile(filename):
-        print(f'Skipped {link}: {filename} already exists')
-        return
+        return f'Skipped {link}: {filename} already exists'
 
     resp = requests.get(link)
     resp.raise_for_status()
@@ -39,33 +46,28 @@ def __extract_quotes_to_disk(link, name, overwrite=False):
     try:
         quotes_list = get_quotes_list_from_html(resp.text)
     except ValueError as e:
-        raise ExtractionError(f'Failed parsing content from {link}: {e}')
+        return f'Failed parsing content from {link}: {e}'
 
     print(f'Writing to contents of {link} to {filename}...')
     with open(filename, 'w', encoding='utf8') as f:
         json.dump(quotes_list, f, ensure_ascii=False)
+    return None
 
 
 def main():
-    article_names_to_links = {}
+    args = []
     for i in range(1, 5):
         with open(f'category-quotes-{i}.html') as f:
             soup = BeautifulSoup(f.read(), 'html.parser')
         for title_h2 in soup.find_all('h2', class_='entry-title'):
             article_link = title_h2.find('a')['href']
             article_name = article_link.strip('/').split('/')[-1]
-            article_names_to_links[article_name] = article_link
+            args.append((article_link, article_name, True))
 
-    failed_links_to_errors = {}
-    for name, link in article_names_to_links.items():
-        try:
-            __extract_quotes_to_disk(link, name, overwrite=True)
-        except ExtractionError as e:
-            failed_links_to_errors[link] = e
-
-    for link, err in failed_links_to_errors.items():
-        print(f'Error exctracting {link}: {err}')
-
+    with Pool(10) as pool:
+        errors = [e for e in pool.starmap(__extract_quotes_to_disk, args) if e]
+    for e in errors:
+        print(e)
 
 if __name__ == '__main__':
     main()
