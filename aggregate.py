@@ -4,6 +4,9 @@ import os
 
 ALL_JSON_FILEPATH = os.path.join('quotes', 'all.json')
 
+def __clean_aggregate(quotes):
+    return [q for q in quotes if 'eval(' not in q['quote']]
+
 def __get_aggregate():
     all_quotes = []
     for filename in os.listdir('quotes'):
@@ -26,5 +29,9 @@ def __read_json(path):
     with open(path, 'r') as f:
         return json.load(f)
 
-__write(__get_aggregate())
-print(f'Wrote aggregation to {ALL_JSON_FILEPATH}')
+def main():
+    __write(__clean_aggregate(__get_aggregate()))
+    print(f'Wrote aggregation to {ALL_JSON_FILEPATH}')
+
+if __name__ == '__main__':
+    main()
