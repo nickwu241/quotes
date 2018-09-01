@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 import json
+import multiprocessing
 import os
-from multiprocessing import Pool
-from time import sleep
 
 import requests
 from bs4 import BeautifulSoup
 
+CACHE_DIR = 'scrape-cache'
 
 def get_quotes_list_from_html(content):
     soup = BeautifulSoup(content, 'html.parser')
+    for script in soup('script'):
+        script.extract()
+
     quotes_list = []
-    quote_divs = soup.find_all('div', class_='author-quotes')
-    for div in quote_divs:
+    for div in soup('div', class_='author-quotes'):
         div_text = div.text.strip()
         if not div_text:
             continue
@@ -32,42 +34,48 @@ def get_quotes_list_from_html(content):
         quotes_list.append({'quote': quote, 'author': author})
     return quotes_list
 
+def __parse_quote_page_to_disk(quote_page_filepath):
+    with open(quote_page_filepath) as f:
+        html = f.read()
+    output_filename = os.path.basename(quote_page_filepath) + '.json'
+    output_filepath = os.path.join('quotes', output_filename)
+    print(f'Parsing contents of {quote_page_filepath} to {output_filepath}')
+    with open(output_filepath, 'w', encoding='utf8') as f:
+        json.dump(get_quotes_list_from_html(html), f, ensure_ascii=False)
 
-def __extract_quotes_to_disk(link, name, overwrite=False):
-    print(f'__extract_quotes_to_disk({link}, {name}, overwrite={overwrite})')
+def __download_quote_page(url, should_overwrite_cache=False):
+    filename = url.strip('/').split('/')[-1]
+    filepath = os.path.join(CACHE_DIR, filename)
+    if not should_overwrite_cache and os.path.isfile(filepath):
+        print(f'Skipping {url} because {filepath} already exists')
+        return filepath
 
-    filename = os.path.join('quotes', f'{name}.json')
-    if not overwrite and os.path.isfile(filename):
-        return f'Skipped {link}: {filename} already exists'
-
-    resp = requests.get(link)
+    print(f'Downloading {url} to {filepath}...')
+    resp = requests.get(url)
     resp.raise_for_status()
-    sleep(2)
-    try:
-        quotes_list = get_quotes_list_from_html(resp.text)
-    except ValueError as e:
-        return f'Failed parsing content from {link}: {e}'
+    with open(filepath, 'w') as f:
+        f.write(resp.text)
+    return filepath
 
-    print(f'Writing to contents of {link} to {filename}...')
-    with open(filename, 'w', encoding='utf8') as f:
-        json.dump(quotes_list, f, ensure_ascii=False)
-    return None
-
-
-def main():
-    args = []
+def __get_urls_from_category_quotes():
+    urls = []
     for i in range(1, 5):
         with open(f'category-quotes-{i}.html') as f:
             soup = BeautifulSoup(f.read(), 'html.parser')
         for title_h2 in soup.find_all('h2', class_='entry-title'):
-            article_link = title_h2.find('a')['href']
-            article_name = article_link.strip('/').split('/')[-1]
-            args.append((article_link, article_name, True))
+            urls.append(title_h2.find('a')['href'])
+    return urls
 
-    with Pool(10) as pool:
-        errors = [e for e in pool.starmap(__extract_quotes_to_disk, args) if e]
-    for e in errors:
-        print(e)
+def __mkdir_cache_dir():
+    os.makedirs(CACHE_DIR, exist_ok=True)
+
+def main():
+    do_overwrite_cache = False
+    __mkdir_cache_dir()
+    args = [(url, do_overwrite_cache) for url in __get_urls_from_category_quotes()]
+    with multiprocessing.Pool() as pool:
+        filepaths = pool.starmap(__download_quote_page, args)
+        pool.map(__parse_quote_page_to_disk, filepaths)
 
 if __name__ == '__main__':
     main()
