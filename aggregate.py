@@ -5,7 +5,7 @@ import os
 ALL_JSON_FILEPATH = os.path.join('quotes', 'all.json')
 
 def __clean_aggregate(quotes):
-    return [q for q in quotes if 'eval(' not in q['quote']]
+    return quotes
 
 def __get_aggregate():
     all_quotes = []
