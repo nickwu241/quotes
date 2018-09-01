@@ -4,7 +4,9 @@ import math
 import os
 import random
 
-from flask import Flask, abort, jsonify, send_from_directory
+from flask import Flask, abort, jsonify, request, send_from_directory
+
+import messenger
 
 app = Flask(__name__, static_url_path='')
 app.config['JSON_AS_ASCII'] = False
@@ -18,6 +20,14 @@ LAST_PAGE = math.ceil(len(QUOTES) / ENTRIES_PER_PAGE)
 @app.route('/')
 def index():
     return send_from_directory('static', 'index.html')
+
+@app.route('/privacy_policy')
+def privacy_policy():
+    return send_from_directory('static', 'privacy_policy.html')
+
+@app.route('/messenger_webhook')
+def messenger_webhook():
+    return messenger.handle_request(request)
 
 @app.route('/metadata')
 def metadata():
