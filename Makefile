@@ -17,4 +17,7 @@ docker-build:
 	docker build --rm -f Dockerfile -t $(LATEST_IMAGE) .
 
 docker-run:
-	docker run --rm -it -p $(DEV_PORT):$(DEV_PORT) $(LATEST_IMAGE)
+	docker run --rm -it -p $(DEV_PORT):$(DEV_PORT) \
+		-e FB_MESSENGER_ACCESS_TOKEN="$FB_MESSENGER_ACCESS_TOKEN" \
+		-e FB_MESSENGER_VERIFY_TOKEN="$FB_MESSENGER_VERIFY_TOKEN" \
+		$(LATEST_IMAGE)
