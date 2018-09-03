@@ -1,19 +1,16 @@
 #!/usr/bin/env python
-import json
 import math
 import os
-import random
 
 from flask import Flask, abort, jsonify, request, send_from_directory
 
 import messenger
+import quotes
 
 app = Flask(__name__, static_url_path='')
 app.config['JSON_AS_ASCII'] = False
 
-with open('quotes/all.json') as f:
-    QUOTES = json.load(f)
-
+QUOTES = quotes.get_all_quotes()
 ENTRIES_PER_PAGE = 100
 LAST_PAGE = math.ceil(len(QUOTES) / ENTRIES_PER_PAGE)
 
@@ -35,7 +32,7 @@ def metadata():
 
 @app.route('/quotes/random')
 def quotes_random():
-    return jsonify(random.choice(QUOTES))
+    return jsonify(quotes.random_quote())
 
 @app.route('/quotes/', defaults={'page': 1})
 @app.route('/quotes/page/<int:page>')

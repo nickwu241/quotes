@@ -1,6 +1,9 @@
 import os
+import re
 
 from pymessenger.bot import Bot
+
+import quotes
 
 FB_MESSENGER_ACCESS_TOKEN = os.environ['FB_MESSENGER_ACCESS_TOKEN']
 FB_MESSENGER_VERIFY_TOKEN = os.environ['FB_MESSENGER_VERIFY_TOKEN']
@@ -22,9 +25,12 @@ def handle_post_request(request):
         for message in event['messaging']:
             if not message.get('message'):
                 continue
-            recipient_id = message['sender']['id']
-            if message['message'].get('text'):
-                FB_MESSENGER_BOT.send_text_message(recipient_id, 'Hello!')
-            if message['message'].get('attachments'):
-                FB_MESSENGER_BOT.send_text_message(recipient_id, 'Hello!')
+            sid = message['sender']['id']
+            text = message['message'].get('text', '')
+            if re.search(r'(give me a)?\s+quote\s+(ple+ase|pl(s|z)|)', text):
+                FB_MESSENGER_BOT.send_text_message(sid, get_random_quote())
     return 'Message Processed'
+
+def get_random_quote():
+    q = quotes.random_quote()
+    return f"{q['quote']}\n\n- {q['author']}"
