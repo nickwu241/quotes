@@ -25,7 +25,7 @@ def index():
 def privacy_policy():
     return send_from_directory('static', 'privacy_policy.html')
 
-@app.route('/messenger_webhook')
+@app.route('/messenger_webhook', methods=['GET', 'POST'])
 def messenger_webhook():
     return messenger.handle_request(request)
 
