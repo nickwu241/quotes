@@ -27,7 +27,7 @@ def handle_post_request(request):
                 continue
             sid = message['sender']['id']
             text = message['message'].get('text', '')
-            if re.search(r'(give me a)?\s+quote\s+(ple+ase|pl(s|z)|)', text):
+            if re.search(r'(give me a )?quote(\s+ple+ase|pl(s|z))?', text):
                 FB_MESSENGER_BOT.send_text_message(sid, get_random_quote())
     return 'Message Processed'
 
