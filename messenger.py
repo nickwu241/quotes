@@ -16,9 +16,7 @@ def handle_get_request(request):
         return request.args.get("hub.challenge")
     return 'Invalid verification token'
 
-
 def handle_post_request(request):
-    print('handling post request')
     output = request.get_json()
     for event in output['entry']:
         for message in event['messaging']:
