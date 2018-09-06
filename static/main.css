@@ -1,0 +1,58 @@
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: 'Helvetica', sans-serif;
+    background-image: url('dawn-daylight-desktop-wallpaper-1301903.jpg');
+    color: white;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 100%;
+    width: 100%;
+}
+
+#app {
+    height: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 3rem;
+}
+
+.content-table {
+    height: 100%;
+    width: 100%;
+    font-size: 337.5%;
+}
+
+.quote-author {
+    font-size: 70%;
+}
+
+.quote-btn {
+    color: white;
+    background-color: #B57AFF;
+    border-radius: 250px;
+}
+
+@media (max-width: 575.98px) {
+    .content-table {
+    font-size: 175%;
+    }
+}
+
+.loader {
+    border: 16px solid white;
+    border-top: 16px solid #B57AFF;
+    border-radius: 50%;
+    height: 120px;
+    width: 120px;
+    animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -8,10 +8,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="shortcut icon" type="image/png" href="/favicon.png"/>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+  <link rel="stylesheet" href="main.css">
 
-  <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
-  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-125077009-2"></script>
   <script>
@@ -21,68 +23,31 @@
 
     gtag('config', 'UA-125077009-2');
   </script>
-  <style>
-    body {
-      width: 100%;
-    }
-
-    #app {
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    .loader {
-      border: 16px solid #f3f3f3;
-      border-top: 16px solid #428bca;
-      border-radius: 50%;
-      width: 120px;
-      height: 120px;
-      animation: spin 1.5s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
 </head>
 
 <body>
   <div id="app">
-    <h1>Quotes</h1>
-    <div v-if="loading" align="center"><div class="loader"></div></div>
-    <div v-else-if="error"><p>{{ error }}</p></div>
-    <div v-else>
-      <div class="card">
-        <div class="card-header">
-          <button type="button" class="btn btn-primary btn-sm" @click="newRandomQuote">New Quote</button>
-          <span class="badge badge-pill badge-info float-right">{{ numberOfQuotes }} quotes available</span>
-        </div>
-        <div class="card-body">
-          <blockquote class="blockquote mb-0">
-            <p>{{ randomQuote['quote'] }}</p>
-            <footer class="blockquote-footer"><cite>{{ randomQuote['author'] }}</cite></footer>
-            <span class="badge badge-primary">{{ randomQuote['tag'] }}</span>
-          </blockquote>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-body">
-          <h3 class="card-title">Try out the API!</h3>
-          <p class="card-text">
-            <div v-for="endpoint in endpoints">GET {{ endpoint }}</div>
-          </p>
-        </div>
-      </div>
-
-      <div class="card text-right">
-        <div class="card-footer">
-          Created with ❤️ by <a href="https://nickwu241.github.io" class="card-link">Nick Wu</a> 🕊️
-        </div>
-      </div>
-    </div>
-
+    <h2>Goody Quotes</h2>
+    <table class="text-white content-table">
+      <tbody>
+        <tr>
+          <td class="align-middle text-center">
+            <div v-if="loading" class="row align-items-center justify-content-center"><div class="loader"></div></div>
+            <div v-else-if="error"><p>{{ error }}</p></div>
+            <div v-else>
+              <p class="text-left"><strong>{{ randomQuote['quote'] }}</strong></p>
+              <p class="text-left quote-author">- {{ randomQuote['author'] }}</p>
+              <button type="button" class="quote-btn btn btn-lg" @click="newRandomQuote">GET A NEW QUOTE</button>
+            </div>
+          </td>
+        </tr>
+        <tr style="height: 32px;">
+          <td style="font-size: 16px">
+            Created with ❤️ by <a href="https://nickwu241.github.io">Nick Wu</a> 🕊️
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
   <script>
     var app = new Vue({
